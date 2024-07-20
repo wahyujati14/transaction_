@@ -227,7 +227,7 @@
 
                 tableContainer.addEventListener('touchmove', (e) => {
                     const x = e.touches[0].pageX - tableContainer.offsetLeft;
-                    const walk = (x - startX) * 3; //scroll-fast
+                    const walk = (x - startX) * 3; 
                     tableContainer.scrollLeft = scrollLeft - walk;
                 });
             }
