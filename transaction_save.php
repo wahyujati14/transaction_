@@ -32,12 +32,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $conn->query($sql);
         }
 
-        // Generate the transaction code in format YYYYMM-XXXX
         $year = date('Y', strtotime($date));
         $month = date('m', strtotime($date));
         $kode = $year . $month . '-' . str_pad($sales_id, 4, '0', STR_PAD_LEFT);
 
-        // Update the transaction record with the generated code
         $sql = "UPDATE t_sales SET kode='$kode' WHERE id=$sales_id";
         $conn->query($sql);
 
