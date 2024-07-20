@@ -123,29 +123,56 @@
             </div>
             <div class="form-group">
                 <label for="customer">Kode:</label>
-                <select id="customer" name="customer_id" required onchange="updateCustomerInfo()">
-                    <option value="">Pilih Kode</option>
+                <input list="customerList" id="customer" name="customer_id" oninput="updateCustomerInfo('kode')"
+                    onchange="updateCustomerInfo('kode')">
+                <datalist id="customerList">
                     <?php
                     include 'db_connection.php';
                     $sql = "SELECT id, kode, name, telp FROM m_customer";
                     $result = $conn->query($sql);
                     if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
-                            echo "<option value='" . $row["id"] . "' data-name='" . $row["name"] . "' data-telp='" . $row["telp"] . "'>" . $row["kode"] . "</option>";
+                            echo "<option value='" . $row["kode"] . "' data-id='" . $row["id"] . "' data-name='" . $row["name"] . "' data-telp='" . $row["telp"] . "'>" . $row["kode"] . "</option>";
                         }
                     } else {
                         echo "<option value=''>No customers available</option>";
                     }
                     ?>
-                </select>
+                </datalist>
             </div>
             <div class="form-group">
                 <label for="customer_name">Nama:</label>
-                <input type="text" id="customer_name" name="customer_name" readonly>
+                <input list="customerNameList" type="text" id="customer_name" name="customer_name"
+                    oninput="updateCustomerInfo('name')" onchange="updateCustomerInfo('name')">
+                <datalist id="customerNameList">
+                    <?php
+                    $result->data_seek(0);
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<option value='" . $row["name"] . "' data-id='" . $row["id"] . "' data-kode='" . $row["kode"] . "' data-telp='" . $row["telp"] . "'>" . $row["name"] . "</option>";
+                        }
+                    } else {
+                        echo "<option value=''>No customers available</option>";
+                    }
+                    ?>
+                </datalist>
             </div>
             <div class="form-group">
                 <label for="customer_telp">Telp:</label>
-                <input type="text" id="customer_telp" name="customer_telp" readonly>
+                <input list="customerTelpList" type="text" id="customer_telp" name="customer_telp"
+                    oninput="updateCustomerInfo('telp')" onchange="updateCustomerInfo('telp')">
+                <datalist id="customerTelpList">
+                    <?php
+                    $result->data_seek(0);
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<option value='" . $row["telp"] . "' data-id='" . $row["id"] . "' data-kode='" . $row["kode"] . "' data-name='" . $row["name"] . "'>" . $row["telp"] . "</option>";
+                        }
+                    } else {
+                        echo "<option value=''>No customers available</option>";
+                    }
+                    ?>
+                </datalist>
             </div>
             <h3>Items</h3>
             <div style="overflow-x:auto;">
@@ -211,7 +238,7 @@
             </div>
             <div class="form-group text-right">
                 <label for="shipping_cost">Ongkir:</label>
-                <input type="number" id="shipping_cost" name="shipping_cost" min="0" required
+                <input type="number" id="shipping_cost" name="shipping_cost" min="0"
                     oninput="calculateGrandTotal()">
             </div>
             <div class="form-group text-right">
@@ -221,6 +248,7 @@
             <div class="form-group text-center">
                 <input type="submit" value="Simpan" class="btn">
             </div>
+            <input type="hidden" id="customer_id" name="customer_id">
             <input type="hidden" id="js_subtotal" name="js_subtotal" value="">
             <input type="hidden" id="js_total_discount" name="js_total_discount" value="">
             <input type="hidden" id="js_total_bayar" name="js_total_bayar" value="">
@@ -232,15 +260,48 @@
     </div>
 
     <script>
-        function updateCustomerInfo() {
-            var customerSelect = document.getElementById('customer');
-            var selectedOption = customerSelect.options[customerSelect.selectedIndex];
-            var customerName = selectedOption.getAttribute('data-name');
-            var customerTelp = selectedOption.getAttribute('data-telp');
+        function updateCustomerInfo(field) {
+            var customerInput = document.getElementById('customer');
+            var customerNameInput = document.getElementById('customer_name');
+            var customerTelpInput = document.getElementById('customer_telp');
+            var customerIdInput = document.getElementById('customer_id');
+            var customerList, selectedOption;
 
-            document.getElementById('customer_name').value = customerName;
-            document.getElementById('customer_telp').value = customerTelp;
+            if (field === 'kode') {
+                customerList = document.getElementById('customerList').options;
+            } else if (field === 'name') {
+                customerList = document.getElementById('customerNameList').options;
+            } else if (field === 'telp') {
+                customerList = document.getElementById('customerTelpList').options;
+            }
+
+            for (var i = 0; i < customerList.length; i++) {
+                if (customerList[i].value === (field === 'kode' ? customerInput.value : (field === 'name' ? customerNameInput.value : customerTelpInput.value))) {
+                    selectedOption = customerList[i];
+                    break;
+                }
+            }
+
+            if (selectedOption) {
+                var customerId = selectedOption.getAttribute('data-id');
+                var customerKode = selectedOption.getAttribute('data-kode');
+                var customerName = selectedOption.getAttribute('data-name');
+                var customerTelp = selectedOption.getAttribute('data-telp');
+
+                if (field !== 'kode') {
+                    customerInput.value = customerKode;
+                }
+                if (field !== 'name') {
+                    customerNameInput.value = customerName;
+                }
+                if (field !== 'telp') {
+                    customerTelpInput.value = customerTelp;
+                }
+
+                customerIdInput.value = customerId;
+            }
         }
+
 
         function updateItemName(selectElement) {
             var selectedOption = selectElement.options[selectElement.selectedIndex];
